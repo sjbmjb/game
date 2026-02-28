@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find the Seal - Streak Edition</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #f4f4f4; padding-top: 30px; }
+        .stats-container { background: white; display: inline-block; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .stat-box { display: inline-block; margin: 0 15px; font-weight: bold; }
+        #currentStreak { color: #3498db; font-size: 24px; }
+        #bestStreak { color: #e67e22; font-size: 24px; }
+        .card { width: 100px; height: 150px; background-color: #0080ff; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 40px; cursor: pointer; margin: 10px; transition: 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .card:hover { transform: translateY(-5px); background-color: #0080ff; }
+        .winner { background-color: #00ff6a !important; color: #1a1a1a; transform: scale(1.1); }
+        .loser { background-color: #ff1900 !important; color: #1a1a1a; opacity: 0.9; }
+        .revealed { background-color: #bdc3c7 !important; color: #0080ff; }
+        button { padding: 12px 24px; font-size: 18px; background-color: #0080ff; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        #status { font-size: 20px; margin-top: 20px; min-height: 30px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="stats-container">
+        <div class="stat-box">Streak: <span id="currentStreak">0</span></div>
+        <div class="stat-box">Best: <span id="bestStreak">0</span></div>
+    </div>
+
+    <h1>Where is the Seal?</h1>
+    <p id="status">Pick a card!</p>
+
+    <div id="gameboard">
+        <div class="card" id="0" onclick="guess(0)">?</div>
+        <div class="card" id="1" onclick="guess(1)">?</div>
+        <div class="card" id="2" onclick="guess(2)">?</div>
+        <div class="card" id="3" onclick="guess(3)">?</div>
+        <div class="card" id="4" onclick="guess(4)">?</div>
+    </div>
+
+    <button onclick="resetGame()">New Round</button>
+
+    <script>
+        let acePosition = Math.floor(Math.random() * 5);
+        let active = true;
+        
+        let streak = parseInt(localStorage.getItem('sealStreak')) || 0;
+        let highscore = parseInt(localStorage.getItem('sealBest')) || 0;
+
+        document.getElementById('currentStreak').innerText = streak;
+        document.getElementById('bestStreak').innerText = highscore;
+
+        const wrongPrizes = ["🛹", "67", "⚾️", "🎮"];
+
+        function guess(cardNumber) {
+            if (!active) return;
+            active = false;
+
+            if (cardNumber === acePosition) {
+                streak++;
+                if (streak > highscore) {
+                    highscore = streak;
+                    localStorage.setItem('sealBest', highscore);
+                }
+                localStorage.setItem('sealStreak', streak);
+                document.getElementById("status").innerHTML = "YOU FOUND THE SEAL!";
+            } else {
+                streak = 0;
+                localStorage.setItem('sealStreak', streak);
+                document.getElementById("status").innerHTML = "Streak broken. Try again!";
+            }
+
+            for (let i = 0; i < 5; i++) {
+                const card = document.getElementById(i);
+                if (i === acePosition) {
+                    card.innerHTML = "🦭";
+                    card.classList.add(i === cardNumber ? "winner" : "revealed");
+                } else {
+                    card.innerHTML = wrongPrizes[Math.floor(Math.random() * wrongPrizes.length)];
+                    if (i === cardNumber) card.classList.add("loser");
+                    else card.classList.add("revealed");
+                }
+            }
+
+            document.getElementById('currentStreak').innerText = streak;
+            document.getElementById('bestStreak').innerText = highscore;
+        }
+
+        function resetGame() {
+            acePosition = Math.floor(Math.random() * 5);
+            active = true;
+            document.getElementById("status").innerHTML = "New round! Pick a card...";
+            for (let i = 0; i < 5; i++) {
+                const card = document.getElementById(i);
+                card.innerHTML = "?";
+                card.className = "card";
+            }
+        }
+    </script>
+</body>
+</html>
